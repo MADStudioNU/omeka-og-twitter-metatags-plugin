@@ -145,21 +145,21 @@ class OpenGraphTwitterMetatagsPlugin extends Omeka_Plugin_AbstractPlugin
     }
 
     // Finally, writing meta tags
-    echo '<meta name="twitter:card" content="summary_large_image" />';
-    echo '<meta name="twitter:site" content="', get_option(OG_TWITTER_METATAGS_PLUGIN_OPTION), '" />';
+    echo '<meta name="twitter:card" content="summary_large_image">';
+    echo '<meta name="twitter:site" content="@', get_option(OG_TWITTER_METATAGS_PLUGIN_OPTION), '">';
 
     if ($title) {
-      echo '<meta name="twitter:title" content="', strip_tags($title), '" />';
-      echo '<meta name="og:title" content="', htmlentities(strip_tags(html_entity_decode($title))), '" />';
+      echo '<meta name="twitter:title" content="', strip_tags($title), '">';
+      echo '<meta name="og:title" content="', htmlentities(strip_tags(html_entity_decode($title))), '">';
 
       if ($description) {
-        echo '<meta name="twitter:description" content="', strip_tags($description), '" />';
-        echo '<meta name="og:description" content="', htmlentities(strip_tags(html_entity_decode($description))), '" />';
+        echo '<meta name="twitter:description" content="', strip_tags($description), '">';
+        echo '<meta name="og:description" content="', htmlentities(strip_tags(html_entity_decode($description))), '">';
       }
 
       if ($imageUrl) {
-        echo '<meta name="twitter:image" content="', $imageUrl, '" />';
-        echo '<meta name="og:image" content="', $imageUrl, '" />';
+        echo '<meta name="twitter:image" content="', $imageUrl, '">';
+        echo '<meta name="og:image" content="', $imageUrl, '">';
       }
     }
   }
