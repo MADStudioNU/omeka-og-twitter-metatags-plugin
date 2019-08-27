@@ -33,6 +33,13 @@ class OpenGraphTwitterMetatagsPlugin extends Omeka_Plugin_AbstractPlugin
     $description = '';
     $imageUrl = '';
 
+    // 
+    $imageUrlAttempted = false;
+
+    // Set couple parameters
+    define('TITLE_MAX_LENGTH', 80);
+    define('DESCRIPTION_MAX_LENGTH', 160);
+
     /**
      * Now, it depends on the page type what data to grab.
      *
@@ -57,13 +64,23 @@ class OpenGraphTwitterMetatagsPlugin extends Omeka_Plugin_AbstractPlugin
     $item = get_current_record('item', false);
     $exhibit = get_current_record('exhibit', false);
     $file = get_current_record('file', false);
+    $page = get_current_record('simple_pages_page', false);
 
-    if ($collection || $item || $exhibit || $file) {
+    if ($collection || $item || $exhibit || $file || $page) {
 
       // Collection overview page (collection/show/:id)
       if ($collection) {
-        $title = metadata('collection', array('Dublin Core', 'Title'));
-        $description = metadata('collection', array('Dublin Core', 'Description'));
+        $title = metadata(
+          'collection',
+          array('Dublin Core', 'Title'),
+          array('no_escape' => true, 'snippet' => TITLE_MAX_LENGTH)
+        );
+
+        $description = metadata(
+          'collection',
+          array('Dublin Core', 'Description'),
+          array('no_escape' => true, 'snippet' => DESCRIPTION_MAX_LENGTH)
+        );
 
         // This gets representative file for collection
         $collectionFile = $collection->getFile();
@@ -74,10 +91,19 @@ class OpenGraphTwitterMetatagsPlugin extends Omeka_Plugin_AbstractPlugin
       }
 
       // Single item and not a collection (because collections/show/:id
-      // has both 'collection' and 'item' set as current record; todo: why?)
+      // has both 'collection' and 'item' set as current record; todo: why?
       if ($item && !$collection) {
-        $title = metadata('item', array('Dublin Core', 'Title'));
-        $description = metadata('item', array('Dublin Core', 'Description'));
+        $title = metadata(
+          'item',
+          array('Dublin Core', 'Title'),
+          array('no_escape' => true, 'snippet' => TITLE_MAX_LENGTH)
+        );
+
+        $description = metadata(
+          'item',
+          array('Dublin Core', 'Description'),
+          array('no_escape' => true, 'snippet' => DESCRIPTION_MAX_LENGTH)
+        );
 
         $itemFile = $item->getFile();
 
@@ -88,8 +114,17 @@ class OpenGraphTwitterMetatagsPlugin extends Omeka_Plugin_AbstractPlugin
 
       // Exhibit page or exhibit landing page
       if ($exhibit) {
-        $title = metadata($exhibit, 'title', array('no_escape' => false));
-        $description = metadata($exhibit, 'description');
+        $title = metadata(
+          $exhibit,
+          'title',
+          array('no_escape' => true, 'snippet' => TITLE_MAX_LENGTH)
+        );
+
+        $description = metadata(
+          $exhibit,
+          'description',
+          array('no_escape' => true, 'snippet' => DESCRIPTION_MAX_LENGTH)
+        );
 
         $exhibitFile = $exhibit->getFile();
 
@@ -100,7 +135,12 @@ class OpenGraphTwitterMetatagsPlugin extends Omeka_Plugin_AbstractPlugin
 
       // File page
       if ($file) {
-        $title = metadata($file, 'display_title');
+        $title = metadata(
+          $file,
+          'display_title',
+          array('no_escape' => true, 'snippet' => TITLE_MAX_LENGTH)
+        );
+
         $description = 'A file from the Open Door Archive collection.';
 
         $fileFile = $file->getFile();
@@ -108,6 +148,17 @@ class OpenGraphTwitterMetatagsPlugin extends Omeka_Plugin_AbstractPlugin
         if ($fileFile && $fileFile->hasFullsize()) {
           $imageUrl = file_display_url($fileFile);
         }
+      }
+
+      // Simple page
+      if ($page) {
+        $title = metadata(
+          'simple_pages_page',
+          'title',
+          array('no_escape' => true, 'snippet' => TITLE_MAX_LENGTH)
+        );
+
+        $description = 'Open Door Archive page.';
       }
 
       // 2.
@@ -128,7 +179,9 @@ class OpenGraphTwitterMetatagsPlugin extends Omeka_Plugin_AbstractPlugin
     if (!$title) {
       $title = option('site_title');
       $description = option('description');
+    }
 
+    if (!$imageUrl) {
       // ...and use one of the featured units image
       $featuredItems = get_random_featured_items(5, true);
 
@@ -149,12 +202,14 @@ class OpenGraphTwitterMetatagsPlugin extends Omeka_Plugin_AbstractPlugin
     echo '<meta name="twitter:site" content="@', get_option(OG_TWITTER_METATAGS_PLUGIN_OPTION), '">';
 
     if ($title) {
-      echo '<meta name="twitter:title" content="', strip_tags($title), '">';
-      echo '<meta name="og:title" content="', htmlentities(strip_tags(html_entity_decode($title))), '">';
+      $title = (strip_tags($title));
+      echo '<meta name="twitter:title" content="', $title, '">';
+      echo '<meta name="og:title" content="', $title, '">';
 
       if ($description) {
-        echo '<meta name="twitter:description" content="', strip_tags($description), '">';
-        echo '<meta name="og:description" content="', htmlentities(strip_tags(html_entity_decode($description))), '">';
+        $description = (strip_tags($description));
+        echo '<meta name="twitter:description" content="', $description, '">';
+        echo '<meta name="og:description" content="', $description, '">';
       }
 
       if ($imageUrl) {
