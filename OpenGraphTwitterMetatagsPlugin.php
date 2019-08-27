@@ -33,9 +33,6 @@ class OpenGraphTwitterMetatagsPlugin extends Omeka_Plugin_AbstractPlugin
     $description = '';
     $imageUrl = '';
 
-    // 
-    $imageUrlAttempted = false;
-
     // Set couple parameters
     define('TITLE_MAX_LENGTH', 80);
     define('DESCRIPTION_MAX_LENGTH', 160);
@@ -63,6 +60,7 @@ class OpenGraphTwitterMetatagsPlugin extends Omeka_Plugin_AbstractPlugin
     $collection = get_current_record('collection', false);
     $item = get_current_record('item', false);
     $exhibit = get_current_record('exhibit', false);
+    $exhibitPage = get_current_record('exhibit_page', false);
     $file = get_current_record('file', false);
     $page = get_current_record('simple_pages_page', false);
 
@@ -133,6 +131,41 @@ class OpenGraphTwitterMetatagsPlugin extends Omeka_Plugin_AbstractPlugin
         }
       }
 
+      if ($exhibitPage) {
+        $title = metadata(
+          $exhibitPage,
+          'title',
+          array('no_escape'=> true, 'snippet' => TITLE_MAX_LENGTH)
+        );
+
+        $description = 'An Open Door Archive exhibit page';
+
+        // Get page blocks
+        $pageBlocks = $exhibitPage->getPageBlocks();
+        shuffle($pageBlocks);
+
+        foreach ($pageBlocks as $block) {
+          $attachments = $block->getAttachments();
+
+          // We're interested only in those with attachments...
+          if ($attachments) {
+            foreach ($attachments as $attachment) {
+              $attachmentFile = $attachment->getFile();
+
+              // ...that have representative image
+              if ($attachmentFile) {
+                $imageUrl = file_display_url($attachmentFile);
+                break;
+              }
+            }
+          }
+
+          if ($imageUrl) {
+            break;
+          }
+        }
+      }
+
       // File page
       if ($file) {
         $title = metadata(
@@ -179,19 +212,20 @@ class OpenGraphTwitterMetatagsPlugin extends Omeka_Plugin_AbstractPlugin
     if (!$title) {
       $title = option('site_title');
       $description = option('description');
-    }
 
-    if (!$imageUrl) {
-      // ...and use one of the featured units image
-      $featuredItems = get_random_featured_items(5, true);
+      if (!$imageUrl) {
 
-      if (count($featuredItems) > 0) {
-        foreach ($featuredItems as $featuredItem) {
-          $featuredItemFile = $featuredItem->getFile();
+        // ...and use one of the featured units image
+        $featuredItems = get_random_featured_items(5, true);
 
-          if ($featuredItemFile && $featuredItemFile->hasFullsize()) {
-            $imageUrl = file_display_url($featuredItemFile);
-            break;
+        if (count($featuredItems) > 0) {
+          foreach ($featuredItems as $featuredItem) {
+            $featuredItemFile = $featuredItem->getFile();
+
+            if ($featuredItemFile && $featuredItemFile->hasFullsize()) {
+              $imageUrl = file_display_url($featuredItemFile);
+              break;
+            }
           }
         }
       }
@@ -202,12 +236,12 @@ class OpenGraphTwitterMetatagsPlugin extends Omeka_Plugin_AbstractPlugin
     echo '<meta name="twitter:site" content="@', get_option(OG_TWITTER_METATAGS_PLUGIN_OPTION), '">';
 
     if ($title) {
-      $title = (strip_tags($title));
+      $title = strip_tags($title);
       echo '<meta name="twitter:title" content="', $title, '">';
       echo '<meta name="og:title" content="', $title, '">';
 
       if ($description) {
-        $description = (strip_tags($description));
+        $description = strip_tags($description);
         echo '<meta name="twitter:description" content="', $description, '">';
         echo '<meta name="og:description" content="', $description, '">';
       }
