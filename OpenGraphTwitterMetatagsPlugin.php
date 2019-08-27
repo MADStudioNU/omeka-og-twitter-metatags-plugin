@@ -68,6 +68,7 @@ class OpenGraphTwitterMetatagsPlugin extends Omeka_Plugin_AbstractPlugin
 
       // Collection overview page (collection/show/:id)
       if ($collection) {
+        // todo: prepend with "Collection:"?
         $title = metadata(
           'collection',
           array('Dublin Core', 'Title'),
