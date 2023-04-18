@@ -1,7 +1,11 @@
 <?php
 
-define('OG_TWITTER_METATAGS_PLUGIN_DIR', __DIR__);
-define('OG_TWITTER_METATAGS_PLUGIN_OPTION', 'twitter_handle');
+if (!defined('OG_TWITTER_METATAGS_PLUGIN_DIR')) {
+    define('OG_TWITTER_METATAGS_PLUGIN_DIR', __DIR__);
+}
+if (!defined('OG_TWITTER_METATAGS_PLUGIN_OPTION')) {
+    define('OG_TWITTER_METATAGS_PLUGIN_OPTION', 'twitter_handle');
+}
 
 class OpenGraphTwitterMetatagsPlugin extends Omeka_Plugin_AbstractPlugin
 {
@@ -19,6 +23,9 @@ class OpenGraphTwitterMetatagsPlugin extends Omeka_Plugin_AbstractPlugin
 
   public function hookPublicHead($args)
   {
+
+    _log("og plugin here", Zend_Log::DEBUG);
+
     /**
      * In general, we need to figure out
      * how to populate 3 fields, all strings:
